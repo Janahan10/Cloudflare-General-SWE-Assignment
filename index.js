@@ -1,8 +1,9 @@
 
 const host = "https://tutorial.cloudflareworkers.com"
+const URL = "https://static-links-page.signalnerve.workers.dev"
 
 addEventListener('fetch', event => {
-  event.respondWith(fetch("https://static-links-page.signalnerve.workers.dev"))
+  event.respondWith(handleRequest(event.request))
 })
 
 /**
@@ -10,28 +11,53 @@ addEventListener('fetch', event => {
  * @param {Response} response
  */
 async function handleRequest(request) {
-
+  console.log("REQUEST URL ======>", request.url)
   if (request.url == host + "/links") {
-    
-    var json = linksRequest()
-
-    response = new Response(json, {
+    return new Response(linksRequest(), {
       headers: { 'content-type': 'application/json' },
     })
-  } else {
+  } 
 
-    response = new Response("hello-workers", {
-      headers: { 'content-type': 'application/json' },
-    })
-
-  }
-  
-  return response
+  const response = await fetch(URL)
+  return new HTMLRewriter()
+    .on('#links', new LinksTransformer(linksList))
+    .on('#profile', new DisplayTransformer('style'))
+    .transform(response)
 }
 
+class DisplayTransformer {
+  constructor(attributeName) {
+    this.attributeName = attributeName
+  }
+
+  async element(element) {
+    const attribute = element.getAttribute(this.attributeName)
+    if (attribute) {
+      element.setAttribute (
+        this.attributeName, 
+        attribute.replace('none', 'block')
+      )
+    }
+  }
+}
+
+class LinksTransformer {
+  constructor(links) {
+    this.links = links
+  }
+  
+  async element(element) {
+    
+    if (element) {
+      for (let link of this.links) {
+        console.log("LINKSSS ======>", link["name"])
+        element.append(`<a href="${link["url"]}">${link['name']}</a>`, {html: true})
+      }
+    }
+  }
+}
 function linksRequest() {
-  var linksList = [link1, link2, link3]
-  var links = []
+var links = []
   
   for (i = 0; i < linksList.length; i++) {
     const item = JSON.stringify(linksList[i])
@@ -40,17 +66,17 @@ function linksRequest() {
   return links
 }
 
-var link1 = {
-  "name": "Link 1",
-  "url": "https://linkurl1"
-}
-
-var link2 = {
-  "name": "Link 2",
-  "url": "https://linkurl2"
-}
-
-var link3 = {
-  "name": "Link 3",
-  "url": "https://linkurl3"
-}
+var linksList = [
+  {
+    "name": "Twitch",
+    "url": "https://www.twitch.tv/"
+  },
+  {
+    "name": "Youtube",
+    "url": "https://www.youtube.com/"
+  },
+  {
+    "name": "Maps",
+    "url": "https://www.google.com/maps"
+  }
+]
