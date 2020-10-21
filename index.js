@@ -1,5 +1,5 @@
 
-const host = "https://tutorial.cloudflareworkers.com"
+const host = "https://linktree-site.janahanravi.workers.dev"
 const URL = "https://static-links-page.signalnerve.workers.dev"
 
 addEventListener('fetch', event => {
@@ -11,7 +11,6 @@ addEventListener('fetch', event => {
  * @param {Response} response
  */
 async function handleRequest(request) {
-  console.log("REQUEST URL ======>", request.url)
   if (request.url == host + "/links") {
     return new Response(linksRequest(), {
       headers: { 'content-type': 'application/json' },
@@ -22,7 +21,22 @@ async function handleRequest(request) {
   return new HTMLRewriter()
     .on('#links', new LinksTransformer(linksList))
     .on('#profile', new DisplayTransformer('style'))
+    .on('#avatar', new ImageTransformer())
+    .on('#name', new NameTransformer)
     .transform(response)
+}
+
+class NameTransformer {
+  async element (element) {
+    element.append('Janahan Ravi')
+  }
+}
+
+class ImageTransformer {
+  async element (element) {
+    element.setAttribute('src','https://janahan10.github.io/portfolio/assets/img/aboutMe.png')
+    element.setAttribute('alt', 'profile image')
+  }
 }
 
 class DisplayTransformer {
@@ -50,7 +64,6 @@ class LinksTransformer {
     
     if (element) {
       for (let link of this.links) {
-        console.log("LINKSSS ======>", link["name"])
         element.append(`<a href="${link["url"]}">${link['name']}</a>`, {html: true})
       }
     }
@@ -68,15 +81,15 @@ var links = []
 
 var linksList = [
   {
-    "name": "Twitch",
-    "url": "https://www.twitch.tv/"
+    "name": "Github",
+    "url": "https://github.com/Janahan10"
   },
   {
-    "name": "Youtube",
-    "url": "https://www.youtube.com/"
+    "name": "Linkedin",
+    "url": "https://www.linkedin.com/in/janahan-ravi/"
   },
   {
-    "name": "Maps",
-    "url": "https://www.google.com/maps"
+    "name": "Portfolio",
+    "url": "https://janahan10.github.io/portfolio/"
   }
 ]
